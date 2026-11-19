@@ -13,6 +13,8 @@ export type ModuleConfig = {
 	updatePerAppConfigs: boolean
 	/** D-Bus session bus address override. Empty = unix:path=$XDG_RUNTIME_DIR/bus */
 	busAddress: string
+	/** Sensor poll interval in milliseconds, minimum 500 */
+	sensorPollMs: number
 }
 
 export function GetConfigFields(): SomeCompanionConfigField[] {
@@ -58,6 +60,15 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			label: 'D-Bus session bus address (empty = unix:path=$XDG_RUNTIME_DIR/bus)',
 			width: 8,
 			default: '',
+		},
+		{
+			type: 'number',
+			id: 'sensorPollMs',
+			label: 'Sensor poll interval (ms)',
+			width: 4,
+			default: 2000,
+			min: 500,
+			max: 60_000,
 		},
 	]
 }

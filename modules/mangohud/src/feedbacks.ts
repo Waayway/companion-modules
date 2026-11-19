@@ -13,6 +13,14 @@ export type FeedbacksSchema = {
 		type: 'boolean'
 		options: Record<string, never>
 	}
+	cpu_temp_above: {
+		type: 'boolean'
+		options: { threshold: number }
+	}
+	gpu_temp_above: {
+		type: 'boolean'
+		options: { threshold: number }
+	}
 }
 
 export function UpdateFeedbacks(self: ModuleInstance): void {
@@ -60,6 +68,50 @@ export function UpdateFeedbacks(self: ModuleInstance): void {
 			options: [],
 			callback: () => {
 				return self.gamemode.isActive()
+			},
+		},
+		cpu_temp_above: {
+			name: 'CPU temperature above',
+			type: 'boolean',
+			defaultStyle: {
+				bgcolor: 0xc80000,
+				color: 0xffffff,
+			},
+			options: [
+				{
+					id: 'threshold',
+					type: 'number',
+					label: 'Threshold (°C)',
+					default: 80,
+					min: 0,
+					max: 150,
+				},
+			],
+			callback: (feedback) => {
+				const temp = self.sensors.getCpuTemp()
+				return temp !== null && temp > feedback.options.threshold
+			},
+		},
+		gpu_temp_above: {
+			name: 'GPU temperature above',
+			type: 'boolean',
+			defaultStyle: {
+				bgcolor: 0xc80000,
+				color: 0xffffff,
+			},
+			options: [
+				{
+					id: 'threshold',
+					type: 'number',
+					label: 'Threshold (°C)',
+					default: 80,
+					min: 0,
+					max: 150,
+				},
+			],
+			callback: (feedback) => {
+				const temp = self.sensors.getGpuTemp()
+				return temp !== null && temp > feedback.options.threshold
 			},
 		},
 	})
