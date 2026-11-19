@@ -16,13 +16,26 @@ export function readFileIfExists(filePath: string): string | null {
 	}
 }
 
+/** A symlinked config file is written through its target, keeping the link itself intact. */
+function resolveWriteTarget(filePath: string): string {
+	try {
+		if (fs.lstatSync(filePath).isSymbolicLink()) {
+			return fs.realpathSync(filePath)
+		}
+	} catch (err) {
+		if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
+	}
+	return filePath
+}
+
 /** Write tmp, rename over the target: MangoHud re-arms its inotify watch on a rename-replace. */
 export function atomicWriteFile(filePath: string, content: string): void {
-	const dir = path.dirname(filePath)
-	const tmpPath = path.join(dir, `.${path.basename(filePath)}.${process.pid}.${randomBytes(4).toString('hex')}.tmp`)
+	const targetPath = resolveWriteTarget(filePath)
+	const dir = path.dirname(targetPath)
+	const tmpPath = path.join(dir, `.${path.basename(targetPath)}.${process.pid}.${randomBytes(4).toString('hex')}.tmp`)
 	fs.writeFileSync(tmpPath, content, 'utf8')
 	try {
-		fs.renameSync(tmpPath, filePath)
+		fs.renameSync(tmpPath, targetPath)
 	} catch (err) {
 		fs.rmSync(tmpPath, { force: true })
 		throw err
@@ -55,6 +68,7 @@ export interface ApplyPresetResult {
  * the directory that already has a preset= line of its own. presets.conf is never touched.
  */
 export function applyPresetToDir(dir: string, entries: number[], updatePerAppConfigs: boolean): ApplyPresetResult {
+	fs.mkdirSync(dir, { recursive: true })
 	const updatedFiles: string[] = []
 	const mainPath = path.join(dir, MAIN_CONFIG_FILE)
 	const mainContent = readFileIfExists(mainPath) ?? ''
