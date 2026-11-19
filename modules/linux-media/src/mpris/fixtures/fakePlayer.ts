@@ -14,6 +14,8 @@ export type FakePlayerInitialState = {
 	album?: string
 	lengthMicroseconds?: bigint
 	artUrl?: string
+	/** Simulates a player that rejects volume control (`CanControl: false` in spirit), default true. */
+	volumeControllable?: boolean
 }
 
 /**
@@ -31,10 +33,14 @@ class FakePlayerInterface extends dbus.interface.Interface {
 	album: string
 	lengthMicroseconds: bigint
 	artUrl: string
+	volumeControllable: boolean
+	playCalls = 0
+	pauseCalls = 0
 	playPauseCalls = 0
 	nextCalls = 0
 	previousCalls = 0
 	stopCalls = 0
+	seekCalls: bigint[] = []
 
 	constructor(initial: FakePlayerInitialState) {
 		super('org.mpris.MediaPlayer2.Player')
@@ -48,6 +54,19 @@ class FakePlayerInterface extends dbus.interface.Interface {
 		this.album = initial.album ?? 'Fake album'
 		this.lengthMicroseconds = initial.lengthMicroseconds ?? 180_000_000n
 		this.artUrl = initial.artUrl ?? 'file:///tmp/fake-art.png'
+		this.volumeControllable = initial.volumeControllable ?? true
+	}
+
+	Play(): void {
+		this.playCalls += 1
+		this.playbackStatus = 'Playing'
+		Interface.emitPropertiesChanged(this, { PlaybackStatus: this.playbackStatus }, [])
+	}
+
+	Pause(): void {
+		this.pauseCalls += 1
+		this.playbackStatus = 'Paused'
+		Interface.emitPropertiesChanged(this, { PlaybackStatus: this.playbackStatus }, [])
 	}
 
 	PlayPause(): void {
@@ -70,6 +89,12 @@ class FakePlayerInterface extends dbus.interface.Interface {
 		Interface.emitPropertiesChanged(this, { PlaybackStatus: this.playbackStatus }, [])
 	}
 
+	Seek(offset: bigint): void {
+		this.seekCalls.push(offset)
+		const next = this.position + offset
+		this.position = next < 0n ? 0n : next
+	}
+
 	get PlaybackStatus(): string {
 		return this.playbackStatus
 	}
@@ -79,6 +104,9 @@ class FakePlayerInterface extends dbus.interface.Interface {
 	}
 
 	set Volume(value: number) {
+		if (!this.volumeControllable) {
+			throw new Error('this player does not support volume control')
+		}
 		this.volume = value
 		Interface.emitPropertiesChanged(this, { Volume: value }, [])
 	}
@@ -138,10 +166,13 @@ FakePlayerInterface.configureMembers({
 		Metadata: { signature: 'a{sv}', access: ACCESS_READ },
 	},
 	methods: {
+		Play: { inSignature: '', outSignature: '' },
+		Pause: { inSignature: '', outSignature: '' },
 		PlayPause: { inSignature: '', outSignature: '' },
 		Next: { inSignature: '', outSignature: '' },
 		Previous: { inSignature: '', outSignature: '' },
 		Stop: { inSignature: '', outSignature: '' },
+		Seek: { inSignature: 'x', outSignature: '' },
 	},
 })
 

@@ -3,12 +3,13 @@ import type { MessageBus } from '@particle/dbus-next'
 import { GetConfigFields, type ModuleConfig } from './config.js'
 import { UpdateVariableDefinitions, UpdateVariableValues, type VariablesSchema } from './variables.js'
 import { UpgradeScripts } from './upgrades.js'
-import { UpdateActions, type ActionsSchema } from './actions.js'
+import { UpdateActions, type ActionsSchema } from './actions/index.js'
 import { UpdateFeedbacks, type FeedbacksSchema } from './feedbacks.js'
 import { UpdatePresets } from './presets.js'
 import { connectWithRetry, resolveBusAddress, type BusConnection } from './mpris/bus.js'
 import { MprisTracker, type TrackerSnapshot } from './mpris/tracker.js'
 import type { PlayerConnection } from './mpris/player.js'
+import { errorMessage } from './errorMessage.js'
 
 export type ModuleSchema = {
 	config: ModuleConfig
@@ -151,8 +152,4 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 		this.updateVariableValues(snapshot)
 		this.checkAllFeedbacks()
 	}
-}
-
-function errorMessage(err: unknown): string {
-	return err instanceof Error ? err.message : String(err)
 }
