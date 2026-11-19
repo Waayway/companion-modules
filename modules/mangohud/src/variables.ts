@@ -1,15 +1,15 @@
 import type ModuleInstance from './main.js'
 
 export type VariablesSchema = {
-	variable1: string
-	variable2: string
-	variable3: string
+	preset: string
+	preset_name: string
+	mangohud_version: string
 }
 
 export function UpdateVariableDefinitions(self: ModuleInstance): void {
 	self.setVariableDefinitions({
-		variable1: { name: 'My first variable' },
-		variable2: { name: 'My second variable' },
-		variable3: { name: 'Another variable' },
+		preset: { name: 'Current preset number' },
+		preset_name: { name: 'Current preset label' },
+		mangohud_version: { name: 'MangoHud version (from the control socket handshake)' },
 	})
 }

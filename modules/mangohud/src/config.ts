@@ -5,6 +5,12 @@ export type ModuleConfig = {
 	configDir: string
 	/** MangoHud control socket name (control=<name> in MangoHud.conf) */
 	controlSocket: string
+	/** Comma separated preset numbers in cycle order, e.g. "1,2,0" */
+	cycleOrder: string
+	/** Comma separated preset=label pairs, e.g. "0=Off,1=Bar,2=Detail" */
+	presetLabels: string
+	/** Also write the preset= line to per-app config files that already have one */
+	updatePerAppConfigs: boolean
 }
 
 export function GetConfigFields(): SomeCompanionConfigField[] {
@@ -19,9 +25,30 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 		{
 			type: 'textinput',
 			id: 'controlSocket',
-			label: 'Control socket name',
+			label: 'Control socket name (control=<name> in MangoHud.conf)',
 			width: 4,
 			default: 'mangohud',
+		},
+		{
+			type: 'textinput',
+			id: 'cycleOrder',
+			label: 'Preset cycle order (comma separated preset numbers)',
+			width: 6,
+			default: '1,2,0',
+		},
+		{
+			type: 'textinput',
+			id: 'presetLabels',
+			label: 'Preset labels (comma separated number=label pairs)',
+			width: 8,
+			default: '0=Off,1=Bar,2=Detail',
+		},
+		{
+			type: 'checkbox',
+			id: 'updatePerAppConfigs',
+			label: 'Also update per-app configs',
+			width: 4,
+			default: true,
 		},
 	]
 }
