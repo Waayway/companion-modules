@@ -76,6 +76,18 @@ export class MprisTracker {
 		return { players, selected }
 	}
 
+	/** The D-Bus connection for the currently selected player, for actions to call methods on. */
+	getSelectedConnection(): PlayerConnection | null {
+		const selected = this.getSnapshot().selected
+		if (!selected) return null
+		return this.players.get(selected.busName)?.connection ?? null
+	}
+
+	/** Forces the selection to be recomputed and reported, e.g. after the configured player changes. */
+	refresh(): void {
+		this.emitUpdate()
+	}
+
 	destroy(): void {
 		this.destroyed = true
 		if (this.positionTimer) {
