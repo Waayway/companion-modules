@@ -424,7 +424,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@particle/dbus-next@npm:^0.11.4":
+"@particle/dbus-next@npm:0.11.4":
   version: 0.11.4
   resolution: "@particle/dbus-next@npm:0.11.4"
   dependencies:
@@ -435,6 +435,20 @@ __metadata:
     safe-buffer: "npm:^5.2.1"
     xml2js: "npm:^0.6.2"
   checksum: 10c0/c76f922ce41ad5fb89108f495219173b616b317d33024fb0e63e58259f54248db2cfb90c82e4db6d6495a82e49591d07844e26201a022b5b7a3227391d0f835e
+  languageName: node
+  linkType: hard
+
+"@particle/dbus-next@patch:@particle/dbus-next@npm%3A0.11.4#~/.yarn/patches/@particle-dbus-next-npm-0.11.4-24d51a1af8.patch":
+  version: 0.11.4
+  resolution: "@particle/dbus-next@patch:@particle/dbus-next@npm%3A0.11.4#~/.yarn/patches/@particle-dbus-next-npm-0.11.4-24d51a1af8.patch::version=0.11.4&hash=6bde44"
+  dependencies:
+    "@nornagon/put": "npm:0.0.8"
+    event-stream: "npm:4.0.1"
+    jsbi: "npm:^4.3.0"
+    long: "npm:^4.0.0"
+    safe-buffer: "npm:^5.2.1"
+    xml2js: "npm:^0.6.2"
+  checksum: 10c0/350eb49b384a729204c6bcd13cf7fa400c566c9576fcbd5415ac2a4793f678862c1a007cec48ff32cb0c2875857353dbe68c8733ea39e4ba462d608692cd1a8b
   languageName: node
   linkType: hard
 
@@ -696,7 +710,7 @@ __metadata:
   dependencies:
     "@companion-module/base": "npm:~2.1.3"
     "@companion-module/tools": "npm:^3.1.1"
-    "@particle/dbus-next": "npm:^0.11.4"
+    "@particle/dbus-next": "patch:@particle/dbus-next@npm%3A0.11.4#~/.yarn/patches/@particle-dbus-next-npm-0.11.4-24d51a1af8.patch"
     "@types/node": "npm:^26.6.4"
     eslint: "npm:^10.12.0"
     prettier: "npm:^3.9.9"

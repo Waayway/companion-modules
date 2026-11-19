@@ -1,0 +1,22 @@
+diff --git a/lib/address-x11.js b/lib/address-x11.js
+index 0391adc3a5c501dd06830c5de92e476e42586972..f3a5e237234f0267d2a98be8c831444f9da2d376 100644
+--- a/lib/address-x11.js
++++ b/lib/address-x11.js
+@@ -2,12 +2,11 @@ const fs = require('fs');
+ const os = require('os');
+ 
+ function getDbusAddressFromWindowSelection (callback) {
+-  // read dbus adress from window selection
+-  // TODO: implement this somewhere
+-  const x11 = require('x11');
+-  if (x11 === null) {
+-    throw new Error('cannot get session bus address from window selection: dbus-next was installed without x11 support');
+-  }
++  // Patched for companion-modules/linux-media: the optional 'x11' package is not a
++  // dependency of this module (it is never called; busAddress is always supplied
++  // explicitly), and a static `require('x11')` here breaks esbuild bundling at
++  // `yarn package` time since 'x11' is not installed. See docs/notes/linux-integrations.md.
++  throw new Error('getDbusAddressFromWindowSelection is not supported: this module always supplies an explicit busAddress');
+ 
+   // read machine uuid
+   fs.readFile('/var/lib/dbus/machine-id', 'ascii', function (err, uuid) {
