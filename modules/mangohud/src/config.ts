@@ -11,6 +11,8 @@ export type ModuleConfig = {
 	presetLabels: string
 	/** Also write the preset= line to per-app config files that already have one */
 	updatePerAppConfigs: boolean
+	/** D-Bus session bus address override. Empty = unix:path=$XDG_RUNTIME_DIR/bus */
+	busAddress: string
 }
 
 export function GetConfigFields(): SomeCompanionConfigField[] {
@@ -49,6 +51,13 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			label: 'Also update per-app configs',
 			width: 4,
 			default: true,
+		},
+		{
+			type: 'textinput',
+			id: 'busAddress',
+			label: 'D-Bus session bus address (empty = unix:path=$XDG_RUNTIME_DIR/bus)',
+			width: 8,
+			default: '',
 		},
 	]
 }

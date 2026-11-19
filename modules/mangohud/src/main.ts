@@ -9,6 +9,7 @@ import { UpdateFeedbacks, type FeedbacksSchema } from './feedbacks.js'
 import { UpdatePresets } from './presets.js'
 import { PresetManager } from './preset/manager.js'
 import { ControlClient } from './control/client.js'
+import { GamemodeClient } from './gamemode/client.js'
 
 export type ModuleSchema = {
 	config: ModuleConfig
@@ -24,6 +25,7 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 	config!: ModuleConfig // Setup in init()
 	readonly presets = new PresetManager(this)
 	readonly control = new ControlClient(this)
+	readonly gamemode = new GamemodeClient(this)
 
 	constructor(internal: unknown) {
 		super(internal)
@@ -43,6 +45,7 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 	// When module gets deleted
 	async destroy(): Promise<void> {
 		this.presets.stop()
+		this.gamemode.stop()
 	}
 
 	async configUpdated(config: ModuleConfig): Promise<void> {
@@ -83,5 +86,12 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 			updatePerAppConfigs: this.config.updatePerAppConfigs,
 		})
 		this.control.configure(this.config.controlSocket?.trim() || 'mangohud')
+
+		const busAddress = this.config.busAddress?.trim()
+			? this.config.busAddress.trim()
+			: process.env.XDG_RUNTIME_DIR
+				? `unix:path=${process.env.XDG_RUNTIME_DIR}/bus`
+				: ''
+		this.gamemode.configure(busAddress)
 	}
 }

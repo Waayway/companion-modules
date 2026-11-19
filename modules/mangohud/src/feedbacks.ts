@@ -9,6 +9,10 @@ export type FeedbacksSchema = {
 		type: 'boolean'
 		options: Record<string, never>
 	}
+	gamemode_active: {
+		type: 'boolean'
+		options: Record<string, never>
+	}
 }
 
 export function UpdateFeedbacks(self: ModuleInstance): void {
@@ -44,6 +48,18 @@ export function UpdateFeedbacks(self: ModuleInstance): void {
 			options: [],
 			callback: async () => {
 				return self.control.isReachable()
+			},
+		},
+		gamemode_active: {
+			name: 'GameMode active',
+			type: 'boolean',
+			defaultStyle: {
+				bgcolor: 0x00c800,
+				color: 0x000000,
+			},
+			options: [],
+			callback: () => {
+				return self.gamemode.isActive()
 			},
 		},
 	})

@@ -4,6 +4,7 @@ export type VariablesSchema = {
 	preset: string
 	preset_name: string
 	mangohud_version: string
+	gamemode: string
 }
 
 export function UpdateVariableDefinitions(self: ModuleInstance): void {
@@ -11,5 +12,6 @@ export function UpdateVariableDefinitions(self: ModuleInstance): void {
 		preset: { name: 'Current preset number' },
 		preset_name: { name: 'Current preset label' },
 		mangohud_version: { name: 'MangoHud version (from the control socket handshake)' },
+		gamemode: { name: 'GameMode active (on/off)' },
 	})
 }
