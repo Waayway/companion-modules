@@ -5,7 +5,7 @@ import { UpdateVariableDefinitions, UpdateVariableValues, type VariablesSchema }
 import { UpgradeScripts } from './upgrades.js'
 import { UpdateActions, type ActionsSchema } from './actions/index.js'
 import { UpdateFeedbacks, type FeedbacksSchema } from './feedbacks/index.js'
-import { UpdatePresets } from './presets.js'
+import { UpdatePresets } from './presets/index.js'
 import { connectWithRetry, resolveBusAddress, type BusConnection } from './mpris/bus.js'
 import { MprisTracker, type TrackerSnapshot } from './mpris/tracker.js'
 import type { PlayerConnection } from './mpris/player.js'
