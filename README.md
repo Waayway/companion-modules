@@ -7,4 +7,6 @@ Native [Bitfocus Companion](https://bitfocus.io/companion) modules for a Linux d
 
 They replace a Generic HTTP module + local helper script. No HTTP server, no child processes.
 
-Status: Phase 0 scaffold done; modules are skeletons. See `docs/plans/`.
+Status: `mangohud` has preset control, HUD/logging/fcat socket control, gamemode status and
+CPU/GPU sensor status (plan phases 0-3); gamescope status (phase 4) and `linux-media` (phase 1)
+are not started. See `docs/plans/`.

@@ -65,6 +65,35 @@ test('applyPresetToDir without updatePerAppConfigs leaves other files untouched'
 	assert.equal(fs.readFileSync(path.join(dir, 'game.conf'), 'utf8'), 'preset=0,1,2\n')
 })
 
+test('applyPresetToDir creates the config dir when it does not exist yet', (t) => {
+	const parent = makeTempDir(t)
+	const dir = path.join(parent, 'nested', 'MangoHud')
+	assert.equal(fs.existsSync(dir), false)
+
+	applyPresetToDir(dir, [0, 1, 2], false)
+
+	assert.equal(fs.readFileSync(path.join(dir, 'MangoHud.conf'), 'utf8'), 'preset=0,1,2\n')
+})
+
+test('applyPresetToDir writes through a symlinked MangoHud.conf, keeping the link in place', (t) => {
+	const dir = makeTempDir(t)
+	const realDir = makeTempDir(t)
+	const realPath = path.join(realDir, 'real-MangoHud.conf')
+	fs.writeFileSync(realPath, 'fps=1\npreset=0,1,2\n')
+	const linkPath = path.join(dir, 'MangoHud.conf')
+	fs.symlinkSync(realPath, linkPath)
+
+	applyPresetToDir(dir, [2, 0, 1], false)
+
+	assert.equal(fs.readlinkSync(linkPath), realPath)
+	assert.equal(fs.readFileSync(realPath, 'utf8'), 'fps=1\npreset=2,0,1\n')
+	assert.equal(fs.readFileSync(linkPath, 'utf8'), 'fps=1\npreset=2,0,1\n')
+	assert.deepEqual(
+		fs.readdirSync(dir).filter((name) => name.endsWith('.tmp')),
+		[],
+	)
+})
+
 test('atomicWriteFile never leaves a .tmp file behind', (t) => {
 	const dir = makeTempDir(t)
 	const target = path.join(dir, 'MangoHud.conf')
