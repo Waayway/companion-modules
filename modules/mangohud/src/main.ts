@@ -11,6 +11,7 @@ import { PresetManager } from './preset/manager.js'
 import { ControlClient } from './control/client.js'
 import { GamemodeClient } from './gamemode/client.js'
 import { SensorsManager } from './sensors/manager.js'
+import { GamescopeManager } from './gamescope/manager.js'
 
 export type ModuleSchema = {
 	config: ModuleConfig
@@ -28,6 +29,7 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 	readonly control = new ControlClient(this)
 	readonly gamemode = new GamemodeClient(this)
 	readonly sensors = new SensorsManager(this)
+	readonly gamescope = new GamescopeManager(this)
 
 	constructor(internal: unknown) {
 		super(internal)
@@ -49,6 +51,7 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 		this.presets.stop()
 		this.gamemode.stop()
 		this.sensors.stop()
+		this.gamescope.stop()
 	}
 
 	async configUpdated(config: ModuleConfig): Promise<void> {
@@ -100,6 +103,11 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 		this.sensors.configure({
 			sysfsRoot: '/sys',
 			pollMs: this.config.sensorPollMs ?? 2000,
+		})
+
+		this.gamescope.configure({
+			procRoot: '/proc',
+			pollMs: this.config.gamescopePollMs ?? 2000,
 		})
 	}
 }

@@ -15,6 +15,8 @@ export type ModuleConfig = {
 	busAddress: string
 	/** Sensor poll interval in milliseconds, minimum 500 */
 	sensorPollMs: number
+	/** Gamescope status poll interval in milliseconds, minimum 500 */
+	gamescopePollMs: number
 }
 
 export function GetConfigFields(): SomeCompanionConfigField[] {
@@ -65,6 +67,15 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			type: 'number',
 			id: 'sensorPollMs',
 			label: 'Sensor poll interval (ms)',
+			width: 4,
+			default: 2000,
+			min: 500,
+			max: 60_000,
+		},
+		{
+			type: 'number',
+			id: 'gamescopePollMs',
+			label: 'Gamescope status poll interval (ms)',
 			width: 4,
 			default: 2000,
 			min: 500,

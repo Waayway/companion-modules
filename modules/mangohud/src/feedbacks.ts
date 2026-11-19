@@ -21,6 +21,30 @@ export type FeedbacksSchema = {
 		type: 'boolean'
 		options: { threshold: number }
 	}
+	gamescope_running: {
+		type: 'boolean'
+		options: Record<string, never>
+	}
+	gamescope_hdr_on: {
+		type: 'boolean'
+		options: Record<string, never>
+	}
+	gamescope_hdr_req: {
+		type: 'boolean'
+		options: Record<string, never>
+	}
+	gamescope_vrr_on: {
+		type: 'boolean'
+		options: Record<string, never>
+	}
+	gamescope_vrr_req: {
+		type: 'boolean'
+		options: Record<string, never>
+	}
+	gamescope_wsi_off: {
+		type: 'boolean'
+		options: Record<string, never>
+	}
 }
 
 export function UpdateFeedbacks(self: ModuleInstance): void {
@@ -113,6 +137,66 @@ export function UpdateFeedbacks(self: ModuleInstance): void {
 				const temp = self.sensors.getGpuTemp()
 				return temp !== null && temp > feedback.options.threshold
 			},
+		},
+		gamescope_running: {
+			name: 'Gamescope running',
+			type: 'boolean',
+			defaultStyle: {
+				bgcolor: 0x00c800,
+				color: 0x000000,
+			},
+			options: [],
+			callback: () => self.gamescope.getState().gs_running === 'on',
+		},
+		gamescope_hdr_on: {
+			name: 'Gamescope HDR on',
+			type: 'boolean',
+			defaultStyle: {
+				bgcolor: 0x00c800,
+				color: 0x000000,
+			},
+			options: [],
+			callback: () => self.gamescope.getState().gs_hdr === 'on',
+		},
+		gamescope_hdr_req: {
+			name: 'Gamescope HDR requested but inactive',
+			type: 'boolean',
+			defaultStyle: {
+				bgcolor: 0xffaa00,
+				color: 0x000000,
+			},
+			options: [],
+			callback: () => self.gamescope.getState().gs_hdr === 'req',
+		},
+		gamescope_vrr_on: {
+			name: 'Gamescope VRR on',
+			type: 'boolean',
+			defaultStyle: {
+				bgcolor: 0x00c800,
+				color: 0x000000,
+			},
+			options: [],
+			callback: () => self.gamescope.getState().gs_vrr === 'on',
+		},
+		gamescope_vrr_req: {
+			name: 'Gamescope VRR requested but inactive',
+			type: 'boolean',
+			defaultStyle: {
+				bgcolor: 0xffaa00,
+				color: 0x000000,
+			},
+			options: [],
+			callback: () => self.gamescope.getState().gs_vrr === 'req',
+		},
+		gamescope_wsi_off: {
+			name: 'Gamescope WSI off (HDR is broken)',
+			type: 'boolean',
+			defaultStyle: {
+				bgcolor: 0xc80000,
+				color: 0xffffff,
+			},
+			options: [],
+			callback: () => self.gamescope.getState().gs_wsi === 'off',
 		},
 	})
 }
