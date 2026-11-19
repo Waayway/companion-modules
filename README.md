@@ -7,4 +7,4 @@ Native [Bitfocus Companion](https://bitfocus.io/companion) modules for a Linux d
 
 They replace a Generic HTTP module + local helper script. No HTTP server, no child processes.
 
-Status: planning. See `docs/plans/`.
+Status: Phase 0 scaffold done; modules are skeletons. See `docs/plans/`.
