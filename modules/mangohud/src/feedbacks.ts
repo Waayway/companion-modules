@@ -1,41 +1,49 @@
 import type ModuleInstance from './main.js'
 
 export type FeedbacksSchema = {
-	sample_feedback: {
+	preset_is: {
 		type: 'boolean'
-		options: {
-			num: number
-		}
+		options: { preset: number }
+	}
+	control_socket_reachable: {
+		type: 'boolean'
+		options: Record<string, never>
 	}
 }
 
 export function UpdateFeedbacks(self: ModuleInstance): void {
 	self.setFeedbackDefinitions({
-		sample_feedback: {
-			name: 'Example Feedback',
+		preset_is: {
+			name: 'Preset is',
 			type: 'boolean',
 			defaultStyle: {
-				bgcolor: 0xff0000,
+				bgcolor: 0x00c800,
 				color: 0x000000,
 			},
 			options: [
 				{
-					id: 'num',
+					id: 'preset',
 					type: 'number',
-					label: 'Test',
-					default: 5,
-					min: 0,
-					max: 10,
-					clampValues: true, // If value is outside the min/max, clamp it to the min/max instead of rejecting the input
+					label: 'Preset number',
+					default: 0,
+					min: -1,
+					max: 99,
 				},
 			],
 			callback: (feedback) => {
-				console.log('Hello world!', feedback.options.num)
-				if (feedback.options.num > 5) {
-					return true
-				} else {
-					return false
-				}
+				return self.presets.getCurrentPreset() === feedback.options.preset
+			},
+		},
+		control_socket_reachable: {
+			name: 'Control socket reachable',
+			type: 'boolean',
+			defaultStyle: {
+				bgcolor: 0x00c800,
+				color: 0x000000,
+			},
+			options: [],
+			callback: async () => {
+				return self.control.isReachable()
 			},
 		},
 	})
