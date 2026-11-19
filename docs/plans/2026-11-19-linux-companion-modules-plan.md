@@ -23,7 +23,7 @@ Decided by the owner (2026-11-19):
    removes the PipeWire/PulseAudio dependency that could not be tested.
 3. DECIDED: repo `Waayway/companion-modules`, private, created through `gh` as Waayway.
 
-Open, each with a recommended answer (reply "all recommended" to accept):
+Open items 4 to 8 were accepted as recommended on 2026-11-19 (see decisions.md):
 
 4. Module ids. Recommended: `linux-media` and `mangohud`. The `generic-` prefix belongs to
    Bitfocus, so it is avoided.

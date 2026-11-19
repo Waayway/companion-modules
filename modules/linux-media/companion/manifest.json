@@ -1,0 +1,37 @@
+{
+	"$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
+	"type": "connection",
+	"id": "linux-media",
+	"name": "linux-media",
+	"shortname": "media",
+	"description": "Control any MPRIS media player on Linux over D-Bus",
+	"version": "0.0.0",
+	"license": "MIT",
+	"repository": "git+https://github.com/Waayway/companion-modules.git",
+	"bugs": "https://github.com/Waayway/companion-modules/issues",
+	"maintainers": [
+		{
+			"name": "Thijs van Waaij",
+			"email": "43408024+Waayway@users.noreply.github.com"
+		}
+	],
+	"runtime": {
+		"type": "node26",
+		"api": "nodejs-ipc",
+		"apiVersion": "0.0.0",
+		"entrypoint": "../dist/main.js"
+	},
+	"legacyIds": [],
+	"manufacturer": "Linux",
+	"products": [
+		"MPRIS media players"
+	],
+	"keywords": [
+		"mpris",
+		"media",
+		"spotify",
+		"mpv",
+		"dbus",
+		"linux"
+	]
+}

@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  module:
+    name: ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [linux-media, mangohud]
+    defaults:
+      run:
+        working-directory: modules/${{ matrix.module }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Use Node.js 26.x
+        # Must match runtime.type (node26) in companion/manifest.json
+        uses: actions/setup-node@v6
+        with:
+          node-version: 26.x
+      - name: Install DBus (integration tests use dbus-run-session)
+        run: sudo apt-get update && sudo apt-get install -y dbus
+        working-directory: .
+      - name: Prepare Environment
+        run: corepack enable
+      - name: Install
+        run: yarn install
+        env:
+          CI: true
+      - name: Build and check types
+        run: yarn build
+      - name: Lint
+        run: yarn lint
+      - name: Test
+        run: yarn test
+      - name: Package
+        run: yarn package
