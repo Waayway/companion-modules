@@ -11,7 +11,7 @@
 		"dev": "tsc -p tsconfig.build.json --watch",
 		"lint:raw": "eslint",
 		"lint": "run lint:raw .",
-		"test": "run build && node --test 'dist/**/*.test.js'"
+		"test": "run build && bash -c 'if command -v dbus-run-session >/dev/null 2>&1; then dbus-run-session -- node --test --test-concurrency=1 \"dist/**/*.test.js\"; else node --test --test-concurrency=1 \"dist/**/*.test.js\"; fi'"
 	},
 	"license": "MIT",
 	"repository": {
