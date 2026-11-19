@@ -1,8 +1,9 @@
 ## MangoHud
 
-Switches MangoHud presets and toggles the HUD, logging and the fcat overlay. No helper program
-or HTTP bridge is needed. Gamescope, gamemode and sensor status are planned for a later version
-of this module (see docs/plans in the repository).
+Switches MangoHud presets, toggles the HUD, logging and the fcat overlay, and reports gamemode,
+CPU/GPU temperature and GPU load as read-only status. No helper program or HTTP bridge is needed.
+Gamescope status is planned for a later version of this module (see docs/plans in the
+repository).
 
 ### Setup
 
@@ -34,3 +35,24 @@ MangoHud's control protocol has no state readback: there is no way to ask it whe
 logging or fcat are currently on, so there is no feedback for those. "Preset is" reads the
 preset number from the config file, and "Control socket reachable" only checks that something is
 listening on the control socket.
+
+### GameMode status
+
+The `gamemode` variable and "GameMode active" feedback read `ClientCount` from gamemoded's
+session D-Bus service (`com.feralinteractive.GameMode`), so they need `gamemoded` running (it
+ships with Feral's GameMode and is normally started automatically when a game requests it) and a
+reachable session bus. Companion does not forward `DBUS_SESSION_BUS_ADDRESS`, so the module
+defaults to `unix:path=$XDG_RUNTIME_DIR/bus`; override it in the connection config if your session
+bus lives elsewhere. If gamemoded is not running, `gamemode` simply reads "off" (not an error). If
+the bus itself cannot be reached, that is logged once and retried in the background with
+increasing backoff rather than repeated every poll.
+
+### CPU/GPU sensors
+
+`cpu_temp`, `gpu_temp` and `gpu_load` are read from sysfs on a timer (config field "Sensor poll
+interval", default 2 s, minimum 500 ms): CPU temperature from the `k10temp` or `zenpower` hwmon
+driver, GPU temperature from the `amdgpu` hwmon driver, and GPU load from
+`gpu_busy_percent`. **These sensors assume an AMD CPU and an AMD GPU**: on anything else (Intel
+GPU, Nvidia GPU, or a CPU without `k10temp`/`zenpower`), the corresponding variable simply reads
+"-" and nothing is logged. The threshold feedbacks "CPU temperature above" and "GPU temperature
+above" are false whenever the matching variable reads "-".
