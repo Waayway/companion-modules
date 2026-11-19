@@ -182,15 +182,26 @@ export type FakePlayer = {
 	disconnect: () => Promise<void>
 }
 
-/** Requests `org.mpris.MediaPlayer2.<suffix>` on `bus` and exports a fake `Player` interface there. */
+/**
+ * Requests `org.mpris.MediaPlayer2.<suffix>` on `bus` and exports a fake `Player` interface there.
+ *
+ * `exportDelayMs` simulates a real player that acquires its name before it has finished exporting its
+ * MPRIS object: a tracker on another connection can observe `NameOwnerChanged` for `busName` and attempt
+ * to introspect/`GetAll` it well before this function's own `export()` call below runs, since the two are
+ * independent async flows with no ordering guarantee between them.
+ */
 export async function startFakePlayer(
 	bus: MessageBus,
 	suffix: string,
 	initial: FakePlayerInitialState = {},
+	exportDelayMs = 0,
 ): Promise<FakePlayer> {
 	const busName = `org.mpris.MediaPlayer2.${suffix}`
 	const playerInterface = new FakePlayerInterface(initial)
 	await bus.requestName(busName, 0)
+	if (exportDelayMs > 0) {
+		await new Promise((resolve) => setTimeout(resolve, exportDelayMs))
+	}
 	bus.export('/org/mpris/MediaPlayer2', playerInterface)
 	return {
 		busName,

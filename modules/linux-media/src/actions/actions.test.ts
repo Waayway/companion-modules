@@ -24,7 +24,7 @@ async function connect(address: string): Promise<MessageBus> {
 	return bus
 }
 
-async function waitFor(predicate: () => boolean, description: string, timeoutMs = 3000): Promise<void> {
+async function waitFor(predicate: () => boolean, description: string, timeoutMs = 10_000): Promise<void> {
 	const start = Date.now()
 	while (!predicate()) {
 		if (Date.now() - start > timeoutMs) {

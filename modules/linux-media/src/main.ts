@@ -133,6 +133,7 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 		const tracker = new MprisTracker(bus, {
 			getConfiguredPlayer: () => this.playerOverride ?? this.config.player ?? 'auto',
 			onUpdate: (snapshot) => this.handleSnapshot(snapshot),
+			log: (message) => this.log('debug', message),
 		})
 		this.tracker = tracker
 		tracker.start().catch((err: unknown) => {

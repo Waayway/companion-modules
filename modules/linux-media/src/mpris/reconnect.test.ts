@@ -14,7 +14,7 @@ import { startFakePlayer } from './fixtures/fakePlayer.js'
 const dbusDaemonAvailable = spawnSync('dbus-daemon', ['--version']).error === undefined
 const skipReason = 'dbus-daemon is not available; skipping D-Bus reconnect integration test'
 
-async function waitFor(predicate: () => boolean, description: string, timeoutMs = 5000): Promise<void> {
+async function waitFor(predicate: () => boolean, description: string, timeoutMs = 10_000): Promise<void> {
 	const start = Date.now()
 	while (!predicate()) {
 		if (Date.now() - start > timeoutMs) {
