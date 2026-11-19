@@ -27,6 +27,34 @@ export async function fetchPlayerProperties(connection: PlayerConnection): Promi
 	return connection.properties.GetAll(MPRIS_PLAYER_INTERFACE)
 }
 
+export type PlayerSetupRetryOptions = {
+	/** Total number of attempts, including the first (immediate) one. */
+	attempts: number
+	/** Delay before the second attempt; doubles for each attempt after that. */
+	initialDelayMs: number
+}
+
+/**
+ * A player can acquire its well-known bus name (`RequestName`) before it exports its MPRIS
+ * object: the `NameOwnerChanged` signal reaches other connections as soon as the name change is
+ * committed, which can race ahead of the same player's own, separate `export()` call. So the
+ * first connect/`GetAll` attempt right after a name appears can legitimately fail, and must be
+ * retried rather than treated as "not a real MPRIS player" on the first try.
+ */
+export const DEFAULT_PLAYER_SETUP_RETRY: PlayerSetupRetryOptions = {
+	attempts: 5,
+	initialDelayMs: 100,
+}
+
+/** The delay before each retry attempt after the first, doubling each time (e.g. [100, 200, 400, 800]). */
+export function playerSetupRetryDelaysMs(options: PlayerSetupRetryOptions = DEFAULT_PLAYER_SETUP_RETRY): number[] {
+	const delays: number[] = []
+	for (let attempt = 0; attempt < options.attempts - 1; attempt++) {
+		delays.push(options.initialDelayMs * 2 ** attempt)
+	}
+	return delays
+}
+
 export type PlayerState = {
 	busName: string
 	playbackStatus: string

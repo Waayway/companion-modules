@@ -3,11 +3,13 @@ import type { MessageBus } from '@particle/dbus-next'
 import { GetConfigFields, type ModuleConfig } from './config.js'
 import { UpdateVariableDefinitions, UpdateVariableValues, type VariablesSchema } from './variables.js'
 import { UpgradeScripts } from './upgrades.js'
-import { UpdateActions, type ActionsSchema } from './actions.js'
-import { UpdateFeedbacks, type FeedbacksSchema } from './feedbacks.js'
-import { UpdatePresets } from './presets.js'
+import { UpdateActions, type ActionsSchema } from './actions/index.js'
+import { UpdateFeedbacks, type FeedbacksSchema } from './feedbacks/index.js'
+import { UpdatePresets } from './presets/index.js'
 import { connectWithRetry, resolveBusAddress, type BusConnection } from './mpris/bus.js'
 import { MprisTracker, type TrackerSnapshot } from './mpris/tracker.js'
+import type { PlayerConnection } from './mpris/player.js'
+import { errorMessage } from './errorMessage.js'
 
 export type ModuleSchema = {
 	config: ModuleConfig
@@ -26,6 +28,9 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 
 	private busConnection: BusConnection | null = null
 	private tracker: MprisTracker | null = null
+	private snapshot: TrackerSnapshot = EMPTY_SNAPSHOT
+	/** Set by the "select player" action; takes priority over the `player` config field until cleared. */
+	private playerOverride: string | null = null
 
 	constructor(internal: unknown) {
 		super(internal)
@@ -80,6 +85,22 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 		UpdateVariableValues(this, snapshot)
 	}
 
+	/** The latest tracker snapshot, for feedbacks to read. */
+	getSnapshot(): TrackerSnapshot {
+		return this.snapshot
+	}
+
+	/** The D-Bus connection for the currently selected player, for actions to call methods on. */
+	getSelectedPlayerConnection(): PlayerConnection | null {
+		return this.tracker?.getSelectedConnection() ?? null
+	}
+
+	/** Sets or clears (`null`) the runtime player override set by the "select player" action. */
+	setPlayerOverride(player: string | null): void {
+		this.playerOverride = player
+		this.tracker?.refresh()
+	}
+
 	// Connects (with retry/backoff on failure) without awaiting, per the module runtime contract: init()
 	// must not block on the bus being reachable, status reporting does that job instead.
 	private connect(): void {
@@ -110,8 +131,9 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 		this.updateStatus(InstanceStatus.Ok)
 
 		const tracker = new MprisTracker(bus, {
-			getConfiguredPlayer: () => this.config.player ?? 'auto',
-			onUpdate: (snapshot) => this.updateVariableValues(snapshot),
+			getConfiguredPlayer: () => this.playerOverride ?? this.config.player ?? 'auto',
+			onUpdate: (snapshot) => this.handleSnapshot(snapshot),
+			log: (message) => this.log('debug', message),
 		})
 		this.tracker = tracker
 		tracker.start().catch((err: unknown) => {
@@ -122,11 +144,13 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 	private handleConnectionFailure(err: unknown): void {
 		this.tracker?.destroy()
 		this.tracker = null
-		this.updateVariableValues(EMPTY_SNAPSHOT)
+		this.handleSnapshot(EMPTY_SNAPSHOT)
 		this.updateStatus(InstanceStatus.ConnectionFailure, errorMessage(err))
 	}
-}
 
-function errorMessage(err: unknown): string {
-	return err instanceof Error ? err.message : String(err)
+	private handleSnapshot(snapshot: TrackerSnapshot): void {
+		this.snapshot = snapshot
+		this.updateVariableValues(snapshot)
+		this.checkAllFeedbacks()
+	}
 }

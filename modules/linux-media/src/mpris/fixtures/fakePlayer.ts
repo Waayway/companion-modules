@@ -14,6 +14,8 @@ export type FakePlayerInitialState = {
 	album?: string
 	lengthMicroseconds?: bigint
 	artUrl?: string
+	/** Simulates a player that rejects volume control (`CanControl: false` in spirit), default true. */
+	volumeControllable?: boolean
 }
 
 /**
@@ -31,10 +33,14 @@ class FakePlayerInterface extends dbus.interface.Interface {
 	album: string
 	lengthMicroseconds: bigint
 	artUrl: string
+	volumeControllable: boolean
+	playCalls = 0
+	pauseCalls = 0
 	playPauseCalls = 0
 	nextCalls = 0
 	previousCalls = 0
 	stopCalls = 0
+	seekCalls: bigint[] = []
 
 	constructor(initial: FakePlayerInitialState) {
 		super('org.mpris.MediaPlayer2.Player')
@@ -48,6 +54,19 @@ class FakePlayerInterface extends dbus.interface.Interface {
 		this.album = initial.album ?? 'Fake album'
 		this.lengthMicroseconds = initial.lengthMicroseconds ?? 180_000_000n
 		this.artUrl = initial.artUrl ?? 'file:///tmp/fake-art.png'
+		this.volumeControllable = initial.volumeControllable ?? true
+	}
+
+	Play(): void {
+		this.playCalls += 1
+		this.playbackStatus = 'Playing'
+		Interface.emitPropertiesChanged(this, { PlaybackStatus: this.playbackStatus }, [])
+	}
+
+	Pause(): void {
+		this.pauseCalls += 1
+		this.playbackStatus = 'Paused'
+		Interface.emitPropertiesChanged(this, { PlaybackStatus: this.playbackStatus }, [])
 	}
 
 	PlayPause(): void {
@@ -70,6 +89,12 @@ class FakePlayerInterface extends dbus.interface.Interface {
 		Interface.emitPropertiesChanged(this, { PlaybackStatus: this.playbackStatus }, [])
 	}
 
+	Seek(offset: bigint): void {
+		this.seekCalls.push(offset)
+		const next = this.position + offset
+		this.position = next < 0n ? 0n : next
+	}
+
 	get PlaybackStatus(): string {
 		return this.playbackStatus
 	}
@@ -79,6 +104,9 @@ class FakePlayerInterface extends dbus.interface.Interface {
 	}
 
 	set Volume(value: number) {
+		if (!this.volumeControllable) {
+			throw new Error('this player does not support volume control')
+		}
 		this.volume = value
 		Interface.emitPropertiesChanged(this, { Volume: value }, [])
 	}
@@ -138,10 +166,13 @@ FakePlayerInterface.configureMembers({
 		Metadata: { signature: 'a{sv}', access: ACCESS_READ },
 	},
 	methods: {
+		Play: { inSignature: '', outSignature: '' },
+		Pause: { inSignature: '', outSignature: '' },
 		PlayPause: { inSignature: '', outSignature: '' },
 		Next: { inSignature: '', outSignature: '' },
 		Previous: { inSignature: '', outSignature: '' },
 		Stop: { inSignature: '', outSignature: '' },
+		Seek: { inSignature: 'x', outSignature: '' },
 	},
 })
 
@@ -151,15 +182,26 @@ export type FakePlayer = {
 	disconnect: () => Promise<void>
 }
 
-/** Requests `org.mpris.MediaPlayer2.<suffix>` on `bus` and exports a fake `Player` interface there. */
+/**
+ * Requests `org.mpris.MediaPlayer2.<suffix>` on `bus` and exports a fake `Player` interface there.
+ *
+ * `exportDelayMs` simulates a real player that acquires its name before it has finished exporting its
+ * MPRIS object: a tracker on another connection can observe `NameOwnerChanged` for `busName` and attempt
+ * to introspect/`GetAll` it well before this function's own `export()` call below runs, since the two are
+ * independent async flows with no ordering guarantee between them.
+ */
 export async function startFakePlayer(
 	bus: MessageBus,
 	suffix: string,
 	initial: FakePlayerInitialState = {},
+	exportDelayMs = 0,
 ): Promise<FakePlayer> {
 	const busName = `org.mpris.MediaPlayer2.${suffix}`
 	const playerInterface = new FakePlayerInterface(initial)
 	await bus.requestName(busName, 0)
+	if (exportDelayMs > 0) {
+		await new Promise((resolve) => setTimeout(resolve, exportDelayMs))
+	}
 	bus.export('/org/mpris/MediaPlayer2', playerInterface)
 	return {
 		busName,

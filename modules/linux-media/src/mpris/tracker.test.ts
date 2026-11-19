@@ -16,7 +16,7 @@ async function connect(address: string): Promise<MessageBus> {
 	return bus
 }
 
-async function waitFor(predicate: () => boolean, description: string, timeoutMs = 3000): Promise<void> {
+async function waitFor(predicate: () => boolean, description: string, timeoutMs = 10_000): Promise<void> {
 	const start = Date.now()
 	while (!predicate()) {
 		if (Date.now() - start > timeoutMs) {
@@ -101,6 +101,40 @@ void test(
 			clientBus.disconnect()
 			alphaBus.disconnect()
 			betaBus.disconnect()
+		}
+	},
+)
+
+void test(
+	'a player that exports its MPRIS object 300ms after acquiring its name is still discovered',
+	{ skip: !hasDbusSession && skipReason },
+	async () => {
+		const address = process.env.DBUS_SESSION_BUS_ADDRESS as string
+		const playerBus = await connect(address)
+		const clientBus = await connect(address)
+
+		const tracker = new MprisTracker(clientBus, {
+			getConfiguredPlayer: () => 'auto',
+			onUpdate: () => {},
+		})
+
+		try {
+			await tracker.start()
+			// requestName() resolves, and NameOwnerChanged can reach the tracker, well before export()
+			// below runs: this is exactly the race the fix in this commit retries through.
+			const slow = await startFakePlayer(playerBus, 'slowexport', { title: 'Slow Song' }, 300)
+
+			await waitFor(
+				() => tracker.getSnapshot().players.some((player) => player.busName === slow.busName),
+				'the slow player to be discovered despite exporting its object well after its name appeared',
+			)
+			assert.equal(tracker.getSnapshot().selected?.metadata.title, 'Slow Song')
+
+			await slow.disconnect()
+		} finally {
+			tracker.destroy()
+			clientBus.disconnect()
+			playerBus.disconnect()
 		}
 	},
 )

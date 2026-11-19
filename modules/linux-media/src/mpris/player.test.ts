@@ -1,6 +1,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { applyPropertyChanges, buildPlayerStateFromProperties, createInitialPlayerState } from './player.js'
+import {
+	applyPropertyChanges,
+	buildPlayerStateFromProperties,
+	createInitialPlayerState,
+	playerSetupRetryDelaysMs,
+} from './player.js'
 
 void test('createInitialPlayerState defaults to a stopped, empty player', () => {
 	const state = createInitialPlayerState('org.mpris.MediaPlayer2.mpv', 1000)
@@ -59,4 +64,18 @@ void test('applyPropertyChanges tolerates a player that never reports Shuffle or
 	const state = buildPlayerStateFromProperties('org.mpris.MediaPlayer2.mpv', { PlaybackStatus: 'Playing' }, 1000)
 	assert.equal(state.shuffle, null)
 	assert.equal(state.loopStatus, null)
+})
+
+void test('playerSetupRetryDelaysMs defaults to 5 attempts doubling from 100ms, totalling about 1.5s', () => {
+	const delays = playerSetupRetryDelaysMs()
+	assert.deepEqual(delays, [100, 200, 400, 800])
+	assert.equal(
+		delays.reduce((sum, delay) => sum + delay, 0),
+		1500,
+	)
+})
+
+void test('playerSetupRetryDelaysMs honours a custom attempt count and initial delay', () => {
+	assert.deepEqual(playerSetupRetryDelaysMs({ attempts: 3, initialDelayMs: 50 }), [50, 100])
+	assert.deepEqual(playerSetupRetryDelaysMs({ attempts: 1, initialDelayMs: 50 }), [])
 })

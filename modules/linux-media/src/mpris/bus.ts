@@ -1,5 +1,14 @@
 import dbus from '@particle/dbus-next'
 import type { MessageBus } from '@particle/dbus-next'
+import type { EventEmitter } from 'node:events'
+
+/**
+ * `@particle/dbus-next`'s `MessageBus` only forwards its connection's `error` event, never `end` (verified
+ * against the installed version: a daemon killed outright closes the socket without an `error`, so
+ * `bus.on('error', ...)` alone never fires). `_connection` is not in the package's public types, so this
+ * reaches past them deliberately to listen for the underlying stream ending too.
+ */
+type BusWithInternalConnection = MessageBus & { _connection?: EventEmitter }
 
 /**
  * Resolves the session bus address: the config override if set, else `unix:path=$XDG_RUNTIME_DIR/bus`.
@@ -79,7 +88,18 @@ export function connectWithRetry(options: BusConnectOptions): BusConnection {
 				return
 			}
 			bus.removeListener('error', onInitialError)
-			bus.on('error', (error: unknown) => fail(error))
+
+			let connectionFailed = false
+			const failOnce = (error: unknown): void => {
+				if (connectionFailed) return
+				connectionFailed = true
+				fail(error)
+			}
+			bus.on('error', failOnce)
+			;(bus as BusWithInternalConnection)._connection?.once('end', () =>
+				failOnce(new Error('the D-Bus connection ended')),
+			)
+
 			attempt = 0
 			currentBus = bus
 			options.onConnected(bus)
