@@ -1,4 +1,4 @@
-/** `x11` ships no types; this declares only the small surface this module calls. */
+/** `x11` ships no types; this declares only the surface this module and its test fixtures call. */
 declare module 'x11' {
 	export interface XProperty {
 		type: number
@@ -23,6 +23,10 @@ declare module 'x11' {
 			longLength: number,
 			cb: (err: Error | null, prop: XProperty) => void,
 		): void
+		// test-fixture only: used to set up fake gamescope properties on a real Xvfb root window
+		InternAtom(onlyIfExists: boolean, name: string, cb: (err: Error | null, atom: number) => void): void
+		ChangeProperty(mode: number, wid: number, name: number, type: number, format: number, data: number[]): void
+		sync(): Promise<void>
 		terminate(): void
 	}
 

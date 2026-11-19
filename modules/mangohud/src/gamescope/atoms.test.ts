@@ -49,6 +49,16 @@ function makeFakeClient(atoms: FakeAtom[]): { client: XClient; getTerminated: ()
 					})
 			})
 		},
+		// not exercised by atoms.ts; only the real x11.d.ts/fixtures/x11-root-atoms.ts use these
+		InternAtom() {
+			throw new Error('not implemented in this fake')
+		},
+		ChangeProperty() {
+			throw new Error('not implemented in this fake')
+		},
+		async sync() {
+			throw new Error('not implemented in this fake')
+		},
 		terminate() {
 			terminated += 1
 		},
