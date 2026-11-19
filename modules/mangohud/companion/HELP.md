@@ -1,9 +1,8 @@
 ## MangoHud
 
 Switches MangoHud presets, toggles the HUD, logging and the fcat overlay, and reports gamemode,
-CPU/GPU temperature and GPU load as read-only status. No helper program or HTTP bridge is needed.
-Gamescope status is planned for a later version of this module (see docs/plans in the
-repository).
+CPU/GPU temperature, GPU load and gamescope status as read-only status. No helper program or HTTP
+bridge is needed.
 
 ### Setup
 
@@ -56,3 +55,47 @@ driver, GPU temperature from the `amdgpu` hwmon driver, and GPU load from
 GPU, Nvidia GPU, or a CPU without `k10temp`/`zenpower`), the corresponding variable simply reads
 "-" and nothing is logged. The threshold feedbacks "CPU temperature above" and "GPU temperature
 above" are false whenever the matching variable reads "-".
+
+### Gamescope status
+
+`gs_running`, `gs_hdr`, `gs_vrr`, `gs_wsi` and `gs_mode` are read from `/proc` and, when a game
+is running under gamescope, from X11 root-window properties on gamescope's own Xwayland display
+(config field "Gamescope status poll interval", default 2 s, minimum 500 ms). No `xprop` or other
+child process is used: the pure-JS `x11` npm package talks the X11 protocol directly, and the
+connection is made and closed per poll — nothing is held open.
+
+- `gs_running`: `on`/`off` — whether a `gamescope`/`gamescope-wl` process owned by the same user
+  is found at all. When it is not, every other gamescope variable reads `off`/`-` and none of the
+  feedbacks below fire.
+- `gs_hdr` and `gs_vrr`: `off`, `on` or `req`.
+  - `off` means HDR/VRR was not requested on gamescope's command line (no `--hdr-enabled` /
+    `--adaptive-sync`).
+  - `on` means it was requested, and either gamescope confirms it is actually active (via the
+    `GAMESCOPE_HDR_OUTPUT_FEEDBACK`/`GAMESCOPE_VRR_FEEDBACK` root-window atoms), or no such atom
+    could be read yet — in which case the command-line flag is trusted.
+  - `req` ("requested") means it was asked for on the command line, but gamescope's own feedback
+    atom reports it is not actually live right now (for example, HDR was requested but the display
+    does not support it, or VRR was requested but the compositor has not enabled it for this
+    output). This is the one state worth watching for: the request did not take effect.
+- `gs_wsi`: `on`/`off`, or `-` when no game process could be found yet to read it from.
+  `ENABLE_GAMESCOPE_WSI=0` in the game's environment means `off`; unset or any other value means
+  `on`. The "Gamescope WSI off" feedback is the practical "HDR is broken" warning: HDR cannot
+  actually work while WSI is disabled, independently of what `gs_hdr` reports.
+- `gs_mode`: `<width>x<height>[@<refresh>]` parsed from gamescope's `-W`/`--output-width`,
+  `-H`/`--output-height` and `-r`/`--nested-refresh` command-line flags (long `--flag=value` form
+  is also accepted). A missing width or height is shown as `?`; a missing refresh rate is simply
+  omitted rather than shown as `@?`. Flags given after a bare `--` on the command line belong to
+  the wrapped game, not gamescope, and are ignored.
+
+Requirements: the `filesystem` runtime permission (already requested for the preset/sensor
+features) for `/proc` access, and network access for the X11 connection (always allowed under
+Companion's permission model, including to a Unix-socket X server). The X11 client reads
+`~/.Xauthority` (or `XAUTHORITY`) itself; since Companion does not forward environment variables
+like `XAUTHORITY` from your desktop session, the module temporarily sets it from the running
+game's own environment (if the game process has one) only for the duration of each atoms read.
+
+The gamescope process itself is found cheaply on every poll, but finding *which other process is
+the game running inside it* (needed for its `DISPLAY`/`ENABLE_GAMESCOPE_WSI`/`XAUTHORITY`) means
+scanning every process's environment, which is only done when that information is still unknown,
+the gamescope process restarted, or the previous attempt to read the X11 atoms failed — not on
+every poll.

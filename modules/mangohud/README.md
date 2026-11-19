@@ -1,7 +1,7 @@
 # companion-module-mangohud
 
-MangoHud preset and HUD control, plus gamemode and CPU/GPU sensor status. Gamescope status is
-not implemented yet (see `docs/plans/` at the repository root).
+MangoHud preset and HUD control, plus gamemode, CPU/GPU sensor and gamescope status (see
+`docs/plans/` at the repository root).
 
 See `companion/HELP.md` for user docs.
 
