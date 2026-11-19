@@ -27,8 +27,8 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 26.x
-      - name: Install DBus (integration tests use dbus-run-session)
-        run: sudo apt-get update && sudo apt-get install -y dbus
+      - name: Install DBus and Xvfb (integration tests use dbus-run-session and a private X server)
+        run: sudo apt-get update && sudo apt-get install -y dbus xvfb
         working-directory: .
       - name: Prepare Environment
         run: corepack enable
