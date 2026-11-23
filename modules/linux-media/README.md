@@ -2,8 +2,8 @@
 
 Control any MPRIS media player on Linux over D-Bus.
 
-**Status**: MPRIS core, actions, feedbacks, presets and live reconnect are done (slices 1-2 of
-the plan). Layered presets, real-device sign-off (Spotify/mpv) and the migration guide remain.
+**Status**: MPRIS core, actions, feedbacks, layered presets (Phase 5 part 1) and live reconnect
+are done. Real-device sign-off (Spotify/mpv) and the migration guide remain.
 
 See `companion/HELP.md` for user docs and `../../docs/plans/` for the plan.
 

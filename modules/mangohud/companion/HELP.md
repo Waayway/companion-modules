@@ -99,3 +99,22 @@ the game running inside it* (needed for its `DISPLAY`/`ENABLE_GAMESCOPE_WSI`/`XA
 scanning every process's environment, which is only done when that information is still unknown,
 the gamescope process restarted, or the previous attempt to read the X11 atoms failed — not on
 every poll.
+
+### Presets
+
+Three groups, reproducing the owner's old GAMING page buttons:
+
+- **Gaming: HUD**: preset switch (Bar/Detail/Off, "selected" colour on the current preset; the
+  numbers/labels match the config defaults, cycle `1,2,0` and `0=Off,1=Bar,2=Detail`), a cycle
+  button showing the current preset's name, plus the small HUD/logging toggle extras (no
+  feedback — MangoHud has no state readback for either, see "No HUD-visible feedback" above).
+- **Gaming: status**: HDR/VRR tiles (green when on, red "FAIL" when requested but not live), WSI
+  (red "OFF" when disabled — there is no "on" feedback to show otherwise), GameMode (green when
+  active; no "requested" state exists for it), gamescope running, and the gamescope output mode
+  text.
+- **Gaming: sensors**: CPU temperature (orange above 80°C, red above 90°C) and GPU
+  temperature+load (orange above 80°C, red above 95°C).
+
+Each preset ships as `type: 'alternatives'`: a layered variant (no icon layer — the owner's icon
+library isn't available to the module, so the label text and colour carry the meaning) with a
+simple-style fallback for hosts that only render simple presets, such as Bitfocus Buttons.

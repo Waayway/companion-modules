@@ -3,6 +3,10 @@
 MangoHud preset and HUD control, plus gamemode, CPU/GPU sensor and gamescope status (see
 `docs/plans/` at the repository root).
 
+**Status**: preset/socket control, gamemode, sensors, gamescope status and layered presets
+(Phase 5 part 1) are done (slices 1-3 + gamescope). Real-device sign-off and the migration guide
+remain.
+
 See `companion/HELP.md` for user docs.
 
 ## Development

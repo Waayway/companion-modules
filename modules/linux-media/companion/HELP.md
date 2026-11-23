@@ -43,6 +43,21 @@ module: the error is caught and logged at warn level.
 (None/Playlist/Track), `position` (s), `length` (s), `players` (count on the bus). With nothing
 selected: `status` is `Stopped`, `title` is `Nothing playing`, and the rest show `-` or `0`.
 
+### Presets
+
+Two groups, reproducing the owner's old MUSIC page buttons (minus system volume/mute and mic
+mute, which need PipeWire this module doesn't talk to):
+
+- **Music**: now playing title/artist (text turns the "playing" colour while playing), app
+  volume, previous/play-pause/next (play/pause swaps to "PAUSE" with the "selected" colour while
+  playing).
+- **Controls**: shuffle (toggle, "selected" colour when on), loop (cycle, shows "ALL"/"ONE" with
+  the "selected" colour for Playlist/Track), volume up/down.
+
+Each preset ships as `type: 'alternatives'`: a layered variant (no icon layer — the owner's icon
+library isn't available to the module, so the label text and colour carry the meaning) with a
+simple-style fallback for hosts that only render simple presets, such as Bitfocus Buttons.
+
 ### Known limits
 
 - Not every player implements every MPRIS property or method. A player without volume control

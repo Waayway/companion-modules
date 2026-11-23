@@ -1,26 +1,39 @@
 import type { ModuleSchema } from '../main.js'
 import type { CompanionPresetDefinitions } from '@companion-module/base'
+import { buttonPreset } from './button.js'
+import { ACTIVE_LABEL, SELECTED_BLUE } from './colors.js'
 
 export const SHUFFLE_LOOP_PRESET_IDS = ['shuffle', 'loop']
 
 export function ShuffleLoopPresets(): CompanionPresetDefinitions<ModuleSchema> {
 	return {
-		shuffle: {
-			type: 'simple',
+		shuffle: buttonPreset({
 			name: 'Shuffle',
-			style: { text: '🔀', size: 44, color: 0xffffff, bgcolor: 0x000000 },
+			text: 'SHUFFLE',
+			fontsize: 62,
 			steps: [{ down: [{ actionId: 'shuffle', options: { mode: 'toggle' } }], up: [] }],
-			feedbacks: [{ feedbackId: 'shuffle_on', options: {}, style: { bgcolor: 0x00ff00, color: 0x000000 } }],
-		},
-		loop: {
-			type: 'simple',
+			states: [{ feedbackId: 'shuffle_on', options: {}, boxColor: SELECTED_BLUE, textColor: ACTIVE_LABEL }],
+		}),
+		loop: buttonPreset({
 			name: 'Loop',
-			style: { text: '🔁', size: 44, color: 0xffffff, bgcolor: 0x000000 },
+			text: 'REPEAT',
 			steps: [{ down: [{ actionId: 'loop', options: { mode: 'cycle' } }], up: [] }],
-			feedbacks: [
-				{ feedbackId: 'loop_mode_is', options: { mode: 'Playlist' }, style: { bgcolor: 0x00ff00, color: 0x000000 } },
-				{ feedbackId: 'loop_mode_is', options: { mode: 'Track' }, style: { bgcolor: 0x00ff00, color: 0x000000 } },
+			states: [
+				{
+					feedbackId: 'loop_mode_is',
+					options: { mode: 'Playlist' },
+					boxColor: SELECTED_BLUE,
+					textColor: ACTIVE_LABEL,
+					text: 'ALL',
+				},
+				{
+					feedbackId: 'loop_mode_is',
+					options: { mode: 'Track' },
+					boxColor: SELECTED_BLUE,
+					textColor: ACTIVE_LABEL,
+					text: 'ONE',
+				},
 			],
-		},
+		}),
 	}
 }

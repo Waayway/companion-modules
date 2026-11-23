@@ -1,37 +1,35 @@
 import type { ModuleSchema } from '../main.js'
 import type { CompanionPresetDefinitions } from '@companion-module/base'
+import { buttonPreset } from './button.js'
+import { ACTIVE_LABEL, SELECTED_BLUE } from './colors.js'
 
-export const TRANSPORT_PRESET_IDS = ['play_pause', 'next', 'previous', 'stop']
+export const TRANSPORT_PRESET_IDS = ['previous', 'play_pause', 'next']
 
 export function TransportPresets(): CompanionPresetDefinitions<ModuleSchema> {
 	return {
-		play_pause: {
-			type: 'simple',
-			name: 'Play/Pause',
-			style: { text: '⏯', size: 44, color: 0xffffff, bgcolor: 0x000000 },
-			steps: [{ down: [{ actionId: 'playpause', options: {} }], up: [] }],
-			feedbacks: [{ feedbackId: 'playing', options: {}, style: { bgcolor: 0x00ff00, color: 0x000000 } }],
-		},
-		next: {
-			type: 'simple',
-			name: 'Next',
-			style: { text: '⏭', size: 44, color: 0xffffff, bgcolor: 0x000000 },
-			steps: [{ down: [{ actionId: 'next', options: {} }], up: [] }],
-			feedbacks: [],
-		},
-		previous: {
-			type: 'simple',
-			name: 'Previous',
-			style: { text: '⏮', size: 44, color: 0xffffff, bgcolor: 0x000000 },
+		previous: buttonPreset({
+			name: 'Previous track',
+			text: 'PREV',
 			steps: [{ down: [{ actionId: 'previous', options: {} }], up: [] }],
-			feedbacks: [],
-		},
-		stop: {
-			type: 'simple',
-			name: 'Stop',
-			style: { text: '⏹', size: 44, color: 0xffffff, bgcolor: 0x000000 },
-			steps: [{ down: [{ actionId: 'stop', options: {} }], up: [] }],
-			feedbacks: [],
-		},
+		}),
+		play_pause: buttonPreset({
+			name: 'Play / Pause',
+			text: 'PLAY',
+			steps: [{ down: [{ actionId: 'playpause', options: {} }], up: [] }],
+			states: [
+				{
+					feedbackId: 'playing',
+					options: {},
+					boxColor: SELECTED_BLUE,
+					textColor: ACTIVE_LABEL,
+					text: 'PAUSE',
+				},
+			],
+		}),
+		next: buttonPreset({
+			name: 'Next track',
+			text: 'NEXT',
+			steps: [{ down: [{ actionId: 'next', options: {} }], up: [] }],
+		}),
 	}
 }
