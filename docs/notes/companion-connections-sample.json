@@ -1,0 +1,40 @@
+{
+  "G1KHr718c3KWzK1Lssvo-": {
+    "moduleInstanceType": "connection",
+    "moduleId": "linux-media",
+    "moduleVersionId": "dev",
+    "updatePolicy": "stable",
+    "sortOrder": 3,
+    "label": "media",
+    "isFirstInit": false,
+    "config": {
+      "player": "auto",
+      "busAddress": "unix:path=/tmp/dbus-554kt4VJBb,guid=c9a4590c1760265b1f7585ea6b040d0e"
+    },
+    "secrets": {},
+    "lastUpgradeIndex": -1,
+    "enabled": true
+  },
+  "9nUZGk2kiZjGGsLwNVZj6": {
+    "moduleInstanceType": "connection",
+    "moduleId": "mangohud",
+    "moduleVersionId": "dev",
+    "updatePolicy": "stable",
+    "sortOrder": 4,
+    "label": "mangohud",
+    "isFirstInit": false,
+    "config": {
+      "configDir": "",
+      "controlSocket": "mangohud-smoke",
+      "cycleOrder": "1,2,0",
+      "presetLabels": "0=Off,1=Bar,2=Detail",
+      "updatePerAppConfigs": true,
+      "busAddress": "unix:path=/tmp/dbus-554kt4VJBb,guid=c9a4590c1760265b1f7585ea6b040d0e",
+      "sensorPollMs": 2000,
+      "gamescopePollMs": 2000
+    },
+    "secrets": {},
+    "lastUpgradeIndex": -1,
+    "enabled": true
+  }
+}

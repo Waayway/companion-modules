@@ -37,7 +37,6 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 
 	async init(config: ModuleConfig): Promise<void> {
 		this.config = config
-		this.applyConfig()
 
 		this.updateStatus(InstanceStatus.Ok)
 
@@ -45,6 +44,14 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 		this.updateFeedbacks() // export feedbacks
 		this.updatePresets() // export Presets
 		this.updateVariableDefinitions() // export variable definitions
+
+		// Must run after updateVariableDefinitions(): applyConfig() synchronously pushes each
+		// manager's initial value (sensors, gamescope, preset) through setVariableValues(), and a
+		// manager only re-pushes a value when it later *changes* from that first push. A value
+		// pushed before its variable is declared is silently dropped by the host, so without this
+		// ordering a variable whose initial value never changes again (e.g. "-" for a sensor that
+		// is never found) would stay unset forever.
+		this.applyConfig()
 	}
 	// When module gets deleted
 	async destroy(): Promise<void> {

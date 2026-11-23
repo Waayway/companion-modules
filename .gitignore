@@ -6,3 +6,5 @@ pkg/
 !.yarn/releases
 .env
 .direnv/
+result
+result-*
