@@ -27,3 +27,12 @@ The input file is never committed (it contains credentials); the converted outpu
 
 Import in Companion: Import / Export, "Import" the file, choose to reset the whole configuration or to import
 the pages, and make sure the developer modules path is set (see the repository README).
+
+## The converted config in this repo
+
+`config/wdesktop.companionconfig` is the output for the owner's own export (three pages: MUSIC,
+MUSIC+CALL, GAMING). It was imported into a real headless Companion 5.1.3 with both modules loaded and every
+music and MangoHud button was pressed against fake backends: 23 of 23 checks passed
+(`tools/smoke/verify-config.sh config/wdesktop.companionconfig`). The Discord buttons are carried over but the
+Discord connection has no credentials: enter its client id and secret after importing. The system-audio
+buttons are gone on purpose (cells left empty).
