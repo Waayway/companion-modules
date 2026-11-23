@@ -1,10 +1,12 @@
 //! Hold tracking: a button is pressed while at least one client holds it.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 #[derive(Default)]
 pub struct Holds {
-    clients: HashMap<u64, HashSet<u8>>,
+    /// Per client: button -> number of downs not yet matched by an up.
+    clients: HashMap<u64, HashMap<u8, usize>>,
+    /// Total holds per button over all clients.
     counts: HashMap<u8, usize>,
 }
 
@@ -15,34 +17,42 @@ impl Holds {
 
     /// Returns the device transition to emit, if any.
     pub fn down(&mut self, client: u64, n: u8) -> Option<(u8, bool)> {
-        if !self.clients.entry(client).or_default().insert(n) {
-            return None;
-        }
+        *self
+            .clients
+            .entry(client)
+            .or_default()
+            .entry(n)
+            .or_insert(0) += 1;
         let c = self.counts.entry(n).or_insert(0);
         *c += 1;
         (*c == 1).then_some((n, true))
     }
 
     pub fn up(&mut self, client: u64, n: u8) -> Option<(u8, bool)> {
-        if !self.clients.get_mut(&client)?.remove(&n) {
-            return None;
+        let held = self.clients.get_mut(&client)?;
+        let c = held.get_mut(&n)?;
+        *c -= 1;
+        if *c == 0 {
+            held.remove(&n);
         }
-        self.dec(n)
+        self.dec(n, 1)
     }
 
     pub fn release_client(&mut self, client: u64) -> Vec<(u8, bool)> {
-        let mut held: Vec<u8> = self
+        let mut held: Vec<(u8, usize)> = self
             .clients
             .remove(&client)
-            .map(|s| s.into_iter().collect())
+            .map(|m| m.into_iter().collect())
             .unwrap_or_default();
         held.sort_unstable();
-        held.into_iter().filter_map(|n| self.dec(n)).collect()
+        held.into_iter()
+            .filter_map(|(n, by)| self.dec(n, by))
+            .collect()
     }
 
-    fn dec(&mut self, n: u8) -> Option<(u8, bool)> {
+    fn dec(&mut self, n: u8, by: usize) -> Option<(u8, bool)> {
         let c = self.counts.get_mut(&n)?;
-        *c -= 1;
+        *c = c.saturating_sub(by);
         if *c == 0 {
             self.counts.remove(&n);
             Some((n, false))
@@ -72,11 +82,29 @@ mod tests {
     }
 
     #[test]
-    fn repeat_down_same_client_is_idempotent() {
+    fn same_client_needs_matching_ups() {
         let mut h = Holds::new();
-        h.down(1, 4);
-        h.down(1, 4);
+        assert_eq!(h.down(1, 4), Some((4, true)));
+        assert_eq!(h.down(1, 4), None);
+        assert_eq!(h.up(1, 4), None);
         assert_eq!(h.up(1, 4), Some((4, false)));
+    }
+
+    #[test]
+    fn same_client_shared_hold() {
+        let mut h = Holds::new();
+        assert_eq!(h.down(1, 5), Some((5, true)));
+        assert_eq!(h.down(1, 5), None);
+        assert_eq!(h.up(1, 5), None);
+        assert_eq!(h.counts.get(&5), Some(&1));
+    }
+
+    #[test]
+    fn release_ignores_count() {
+        let mut h = Holds::new();
+        h.down(1, 6);
+        h.down(1, 6);
+        assert_eq!(h.release_client(1), vec![(6, false)]);
     }
 
     #[test]
