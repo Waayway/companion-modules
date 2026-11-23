@@ -14,7 +14,14 @@ test('parses HDR/VRR flags and -W/-H/-r values given as separate args', () => {
 		'-r',
 		'144',
 	])
-	assert.deepEqual(flags, { hdrRequested: true, vrrRequested: true, width: 2560, height: 1440, refresh: 144 })
+	assert.deepEqual(flags, {
+		hdrRequested: true,
+		vrrRequested: true,
+		width: 2560,
+		height: 1440,
+		refresh: 144,
+		preferredOutputs: [],
+	})
 })
 
 test('parses the long flag forms, including "--flag=value"', () => {
@@ -25,12 +32,26 @@ test('parses the long flag forms, including "--flag=value"', () => {
 		'1080',
 		'--nested-refresh=60',
 	])
-	assert.deepEqual(flags, { hdrRequested: false, vrrRequested: false, width: 1920, height: 1080, refresh: 60 })
+	assert.deepEqual(flags, {
+		hdrRequested: false,
+		vrrRequested: false,
+		width: 1920,
+		height: 1080,
+		refresh: 60,
+		preferredOutputs: [],
+	})
 })
 
 test('missing -W/-H/-r read as null, not a throw', () => {
 	const flags = parseGamescopeFlags(['gamescope'])
-	assert.deepEqual(flags, { hdrRequested: false, vrrRequested: false, width: null, height: null, refresh: null })
+	assert.deepEqual(flags, {
+		hdrRequested: false,
+		vrrRequested: false,
+		width: null,
+		height: null,
+		refresh: null,
+		preferredOutputs: [],
+	})
 })
 
 test('ignores everything after a bare "--": the wrapped command is not gamescope flags', () => {
@@ -45,7 +66,14 @@ test('ignores everything after a bare "--": the wrapped command is not gamescope
 		'-H',
 		'1080',
 	])
-	assert.deepEqual(flags, { hdrRequested: false, vrrRequested: false, width: 1920, height: null, refresh: null })
+	assert.deepEqual(flags, {
+		hdrRequested: false,
+		vrrRequested: false,
+		width: 1920,
+		height: null,
+		refresh: null,
+		preferredOutputs: [],
+	})
 })
 
 test('a trailing flag with no value reads as null instead of consuming the next arg', () => {

@@ -3,7 +3,14 @@ import assert from 'node:assert/strict'
 import { computeGamescopeVariables, type GamescopeSnapshot } from './state.js'
 import type { GamescopeFlags } from './cmdline.js'
 
-const FLAGS: GamescopeFlags = { hdrRequested: false, vrrRequested: false, width: 1920, height: 1080, refresh: 60 }
+const FLAGS: GamescopeFlags = {
+	hdrRequested: false,
+	vrrRequested: false,
+	width: 1920,
+	height: 1080,
+	refresh: 60,
+	preferredOutputs: [],
+}
 
 interface SnapshotOverrides {
 	wsiEnabled?: boolean | null
