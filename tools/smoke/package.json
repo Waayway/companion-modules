@@ -1,0 +1,10 @@
+{
+	"name": "companion-modules-smoke-tools",
+	"private": true,
+	"type": "module",
+	"description": "Headless Companion smoke-test tooling. Not a published package, not part of any module build.",
+	"dependencies": {
+		"@particle/dbus-next": "^0.11.4",
+		"@trpc/client": "^11.19.0"
+	}
+}
