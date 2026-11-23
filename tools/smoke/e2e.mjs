@@ -290,14 +290,30 @@ try {
 	})
 	record('gamemode variable flips off via the fake GameMode service', true)
 
-	// === sensors: fake sysfs is not possible in a real run, report whatever shows ===
+	// === sensors: fake sysfs is not possible in a real run, but a missing sensor must still read
+	// "-" (200), not come back 404/unset - regression check for the init()-ordering bug fixed in
+	// fix(mangohud): declare variables before the first applyConfig() push (see smoke report) ===
+	await waitFor(async () => (await rest.getText('/api/variable/mangohud/cpu_temp/value')).text === '-', {
+		label: 'cpu_temp variable -> "-" (no AMD hwmon on this host)',
+	})
 	const cpuTemp = await rest.getText('/api/variable/mangohud/cpu_temp/value')
 	const gpuTemp = await rest.getText('/api/variable/mangohud/gpu_temp/value')
 	const gpuLoad = await rest.getText('/api/variable/mangohud/gpu_load/value')
+	const gsRunning = await rest.getText('/api/variable/mangohud/gs_running/value')
 	record(
-		'sensor variables reported (no AMD hwmon on this host, "-" expected)',
-		true,
-		`cpu_temp=${cpuTemp.text} gpu_temp=${gpuTemp.text} gpu_load=${gpuLoad.text}`
+		'sensor variables read "-" (not 404/unset) with no AMD hwmon on this host',
+		cpuTemp.status === 200 &&
+			cpuTemp.text === '-' &&
+			gpuTemp.status === 200 &&
+			gpuTemp.text === '-' &&
+			gpuLoad.status === 200 &&
+			gpuLoad.text === '-',
+		`cpu_temp=${cpuTemp.status}:${cpuTemp.text} gpu_temp=${gpuTemp.status}:${gpuTemp.text} gpu_load=${gpuLoad.status}:${gpuLoad.text}`
+	)
+	record(
+		'gamescope variable reads "off" (not 404/unset) with no gamescope process running',
+		gsRunning.status === 200 && gsRunning.text === 'off',
+		`gs_running=${gsRunning.status}:${gsRunning.text}`
 	)
 
 	// === format finding: export the full config, with the two connections and the button above ===
