@@ -8,24 +8,14 @@ import { NowPlayingPresets, NOW_PLAYING_PRESET_IDS } from './nowPlaying.js'
 export function UpdatePresets(self: ModuleInstance): void {
 	const structure: CompanionPresetSection[] = [
 		{
-			id: 'transport',
-			name: 'Transport',
-			definitions: TRANSPORT_PRESET_IDS,
+			id: 'music',
+			name: 'Music',
+			definitions: [...NOW_PLAYING_PRESET_IDS, ...TRANSPORT_PRESET_IDS],
 		},
 		{
-			id: 'shuffle_loop',
-			name: 'Shuffle & loop',
-			definitions: SHUFFLE_LOOP_PRESET_IDS,
-		},
-		{
-			id: 'volume',
-			name: 'Volume',
-			definitions: VOLUME_PRESET_IDS,
-		},
-		{
-			id: 'now_playing',
-			name: 'Now playing',
-			definitions: NOW_PLAYING_PRESET_IDS,
+			id: 'controls',
+			name: 'Controls',
+			definitions: [...SHUFFLE_LOOP_PRESET_IDS, ...VOLUME_PRESET_IDS],
 		},
 	]
 

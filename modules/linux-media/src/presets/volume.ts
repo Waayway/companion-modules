@@ -1,23 +1,20 @@
 import type { ModuleSchema } from '../main.js'
 import type { CompanionPresetDefinitions } from '@companion-module/base'
+import { buttonPreset } from './button.js'
 
 export const VOLUME_PRESET_IDS = ['volume_up', 'volume_down']
 
 export function VolumePresets(): CompanionPresetDefinitions<ModuleSchema> {
 	return {
-		volume_up: {
-			type: 'simple',
+		volume_up: buttonPreset({
 			name: 'Volume up',
-			style: { text: '🔈+', size: 24, color: 0xffffff, bgcolor: 0x000000 },
+			text: 'VOL +',
 			steps: [{ down: [{ actionId: 'volume_up', options: { step: 5 } }], up: [] }],
-			feedbacks: [],
-		},
-		volume_down: {
-			type: 'simple',
+		}),
+		volume_down: buttonPreset({
 			name: 'Volume down',
-			style: { text: '🔈-', size: 24, color: 0xffffff, bgcolor: 0x000000 },
+			text: 'VOL -',
 			steps: [{ down: [{ actionId: 'volume_down', options: { step: 5 } }], up: [] }],
-			feedbacks: [],
-		},
+		}),
 	}
 }
