@@ -1,6 +1,7 @@
 import { findGamescopeProcess, type GamescopeProcess } from './process.js'
 import { findGameProcessInsideGamescope, type GameProcess } from './environ.js'
 import { readRootAtoms } from './atoms.js'
+import { readHyprlandRefresh } from './hyprland.js'
 import { computeGamescopeVariables, type GamescopeSnapshot, type GamescopeVariables } from './state.js'
 
 const MIN_POLL_MS = 500
@@ -31,6 +32,7 @@ export interface GamescopeManagerDeps {
 	findGamescopeProcess(procRoot: string, ownUid: number): GamescopeProcess | null
 	findGameProcessInsideGamescope(procRoot: string): GameProcess | null
 	readRootAtoms(display: string): Promise<Record<string, number[]>>
+	readOutputRefresh(preferredOutputs: string[]): Promise<number | null>
 	getuid(): number
 }
 
@@ -38,6 +40,7 @@ const DEFAULT_DEPS: GamescopeManagerDeps = {
 	findGamescopeProcess,
 	findGameProcessInsideGamescope,
 	readRootAtoms,
+	readOutputRefresh: readHyprlandRefresh,
 	getuid: () => process.getuid?.() ?? 0,
 }
 
@@ -110,9 +113,16 @@ export class GamescopeManager {
 
 		const atoms = await this.readAtoms()
 
+		// Without -r gamescope runs at its output's refresh rate; ask the compositor for it.
+		let flags = gamescope.flags
+		if (flags.refresh === null) {
+			const refresh = await this.deps.readOutputRefresh(flags.preferredOutputs).catch(() => null)
+			if (refresh !== null) flags = { ...flags, refresh }
+		}
+
 		this.push({
 			running: true,
-			flags: gamescope.flags,
+			flags,
 			wsiEnabled: this.cachedGame?.wsiEnabled ?? null,
 			atoms,
 		})

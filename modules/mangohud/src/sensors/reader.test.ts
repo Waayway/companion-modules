@@ -46,3 +46,20 @@ test('readSensors finds zenpower as an alternative CPU sensor', (t) => {
 
 	assert.deepEqual(readSensors(root), { cpuTemp: 39, gpuTemp: null, gpuLoad: null })
 })
+
+test('readSensors reads load and temp from the discrete GPU, not the iGPU at card0', (t) => {
+	const root = makeTempDir(t)
+	writeHwmon(root, 'hwmon1', 'k10temp', 60000)
+	// iGPU: card0, first amdgpu hwmon, small VRAM
+	writeHwmon(root, 'hwmon2', 'amdgpu', 40000)
+	writeCard(root, 'card0', 0)
+	fs.writeFileSync(path.join(root, 'class', 'drm', 'card0', 'device', 'mem_info_vram_total'), '536870912\n')
+	// discrete: card1, 16 GiB, its own hwmon under device/hwmon
+	writeCard(root, 'card1', 97)
+	fs.writeFileSync(path.join(root, 'class', 'drm', 'card1', 'device', 'mem_info_vram_total'), '17179869184\n')
+	const hwmon = path.join(root, 'class', 'drm', 'card1', 'device', 'hwmon', 'hwmon3')
+	fs.mkdirSync(hwmon, { recursive: true })
+	fs.writeFileSync(path.join(hwmon, 'temp1_input'), '71000\n')
+
+	assert.deepEqual(readSensors(root), { cpuTemp: 60, gpuTemp: 71, gpuLoad: 97 })
+})

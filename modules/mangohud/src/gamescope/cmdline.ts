@@ -4,11 +4,14 @@ export interface GamescopeFlags {
 	width: number | null
 	height: number | null
 	refresh: number | null
+	/** -O / --prefer-output, comma-separated connector names; empty when not given */
+	preferredOutputs: string[]
 }
 
 const WIDTH_FLAGS = ['-W', '--output-width']
 const HEIGHT_FLAGS = ['-H', '--output-height']
 const REFRESH_FLAGS = ['-r', '--nested-refresh']
+const OUTPUT_FLAGS = ['-O', '--prefer-output']
 
 /** Everything gamescope itself parses: cmdline args up to (not including) a bare "--", which separates the wrapped command's own args. */
 function flagArgs(cmdline: string[]): string[] {
@@ -40,6 +43,10 @@ export function parseGamescopeFlags(cmdline: string[]): GamescopeFlags {
 		width: parsePositiveInt(findFlagValue(args, WIDTH_FLAGS)),
 		height: parsePositiveInt(findFlagValue(args, HEIGHT_FLAGS)),
 		refresh: parsePositiveInt(findFlagValue(args, REFRESH_FLAGS)),
+		preferredOutputs: (findFlagValue(args, OUTPUT_FLAGS) ?? '')
+			.split(',')
+			.map((name) => name.trim())
+			.filter((name) => name !== '' && name !== '*'),
 	}
 }
 

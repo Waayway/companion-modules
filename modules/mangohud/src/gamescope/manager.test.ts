@@ -5,7 +5,14 @@ import type { GamescopeProcess } from './process.js'
 import type { GameProcess } from './environ.js'
 import type { GamescopeFlags } from './cmdline.js'
 
-const FLAGS: GamescopeFlags = { hdrRequested: false, vrrRequested: false, width: 1920, height: 1080, refresh: 60 }
+const FLAGS: GamescopeFlags = {
+	hdrRequested: false,
+	vrrRequested: false,
+	width: 1920,
+	height: 1080,
+	refresh: 60,
+	preferredOutputs: [],
+}
 
 function makeHost(): {
 	host: GamescopeManagerHost
@@ -31,6 +38,8 @@ interface FakeState {
 	findGamescopeCalls: number
 	findGameCalls: number
 	readAtomsCalls: string[]
+	outputRefresh: number | null
+	refreshQueries: string[][]
 }
 
 function makeDeps(initial: Partial<FakeState> = {}): { deps: GamescopeManagerDeps; state: FakeState } {
@@ -41,6 +50,8 @@ function makeDeps(initial: Partial<FakeState> = {}): { deps: GamescopeManagerDep
 		findGamescopeCalls: 0,
 		findGameCalls: 0,
 		readAtomsCalls: [],
+		outputRefresh: null,
+		refreshQueries: [],
 		...initial,
 	}
 	const deps: GamescopeManagerDeps = {
@@ -56,6 +67,10 @@ function makeDeps(initial: Partial<FakeState> = {}): { deps: GamescopeManagerDep
 			state.readAtomsCalls.push(display)
 			if (state.atomsResult instanceof Error) throw state.atomsResult
 			return state.atomsResult
+		},
+		readOutputRefresh: async (outputs) => {
+			state.refreshQueries.push(outputs)
+			return state.outputRefresh
 		},
 		getuid: () => 1000,
 	}
@@ -243,4 +258,29 @@ test('pollMs is clamped to 500ms and stop() halts further polling', async () => 
 	manager.stop()
 	await new Promise((resolve) => setTimeout(resolve, 600))
 	assert.equal(state.findGamescopeCalls, 2, 'stop() prevents further polls')
+})
+
+test('without -r, gs_mode takes the refresh rate of the preferred output from the compositor', async () => {
+	const { host, setCalls } = makeHost()
+	const flags: GamescopeFlags = { ...FLAGS, width: 3840, height: 2160, refresh: null, preferredOutputs: ['DP-3'] }
+	const { deps, state } = makeDeps({ gamescope: { pid: 60, flags }, outputRefresh: 144 })
+	const manager = new GamescopeManager(host, deps)
+
+	await manager.poll()
+
+	assert.deepEqual(state.refreshQueries, [['DP-3']])
+	assert.equal(setCalls[0].gs_mode, '3840x2160@144')
+})
+
+test('with -r the compositor is not asked, and an unknown refresh leaves the suffix off', async () => {
+	const { host, setCalls } = makeHost()
+	const { deps, state } = makeDeps({ gamescope: { pid: 61, flags: FLAGS }, outputRefresh: 144 })
+	await new GamescopeManager(host, deps).poll()
+	assert.deepEqual(state.refreshQueries, [])
+	assert.equal(setCalls[0].gs_mode, '1920x1080@60')
+
+	const second = makeHost()
+	const unknown = makeDeps({ gamescope: { pid: 62, flags: { ...FLAGS, refresh: null } }, outputRefresh: null })
+	await new GamescopeManager(second.host, unknown.deps).poll()
+	assert.equal(second.setCalls[0].gs_mode, '1920x1080')
 })
