@@ -44,3 +44,29 @@ jobs:
         run: yarn test
       - name: Package
         run: yarn package
+
+  nix:
+    name: nix build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@v31
+      - name: Flake check
+        run: nix flake check --no-build
+      - name: NixOS and home-manager modules evaluate
+        run: |
+          nix eval --impure --json --expr 'let f = builtins.getFlake (toString ./.); in import ./nix/eval-test.nix { self = f; nixpkgs = f.inputs.nixpkgs; }'
+      - name: Build both modules
+        run: nix build .#default --print-build-logs
+      - name: Modules are real files (Companion denies reads through symlinks into other store paths)
+        run: |
+          set -eu
+          out="$(nix build .#default --no-link --print-out-paths)/share/companion-modules"
+          for m in linux-media mangohud; do
+            test -f "$out/$m/main.js" && test ! -L "$out/$m/main.js"
+            test -f "$out/$m/companion/manifest.json" && test ! -L "$out/$m/companion/manifest.json"
+          done
+          echo "ok"
