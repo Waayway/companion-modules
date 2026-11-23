@@ -95,7 +95,10 @@ function variableRefs(text: string): { connection: string; variable: string }[] 
 
 function textValuesOf(variant: Variant): string[] {
 	if (variant.type === 'simple') {
-		return [variant.style.text, ...variant.feedbacks.flatMap((f) => (f.style?.text !== undefined ? [f.style.text] : []))]
+		return [
+			variant.style.text,
+			...variant.feedbacks.flatMap((f) => (f.style?.text !== undefined ? [f.style.text] : [])),
+		]
 	}
 	const values: string[] = []
 	for (const element of variant.elements) {
@@ -194,7 +197,10 @@ void test('every preset colour is a valid 24-bit RGB value', () => {
 			} else {
 				for (const element of variant.elements) {
 					if (element.color !== undefined) {
-						assert.ok(isValidColor(element.color), `preset "${id}" element "${String(element.id)}" has an invalid color`)
+						assert.ok(
+							isValidColor(element.color),
+							`preset "${id}" element "${String(element.id)}" has an invalid color`,
+						)
 					}
 				}
 				for (const feedback of variant.feedbacks) {

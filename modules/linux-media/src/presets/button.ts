@@ -40,7 +40,8 @@ export interface ButtonSpec {
 export function buttonPreset(spec: ButtonSpec): CompanionPresetAlternatives<ModuleSchema> {
 	const fontsize = spec.fontsize ?? 80
 	const states = spec.states ?? []
-	const layeredText = spec.expression !== undefined ? { isExpression: true as const, value: spec.expression } : spec.text
+	const layeredText =
+		spec.expression !== undefined ? { isExpression: true as const, value: spec.expression } : spec.text
 
 	const layeredFeedbacks: SomePresetLayeredFeedbackEntry<ModuleSchema>[] = states.map((state) => {
 		const styleOverrides: CompanionPresetFeedbackStyleOverride[] = []
