@@ -68,7 +68,13 @@
 
       modulePackages =
         pkgs:
-        nixpkgs.lib.mapAttrs (id: spec: mkModule pkgs { inherit id; hash = spec.hash; }) moduleSpecs;
+        nixpkgs.lib.mapAttrs (
+          id: spec:
+          mkModule pkgs {
+            inherit id;
+            hash = spec.hash;
+          }
+        ) moduleSpecs;
     in
     {
       packages = forAllSystems (
@@ -78,6 +84,20 @@
         in
         modules
         // {
+          # Virtual joystick (uinput) daemon for the `buttonbox` module; run it next to Companion.
+          buttonbox-daemon = pkgs.rustPlatform.buildRustPackage {
+            pname = "companion-buttonbox";
+            version = (builtins.fromTOML (builtins.readFile ./daemons/buttonbox/Cargo.toml)).package.version;
+            src = ./daemons/buttonbox;
+            cargoLock.lockFile = ./daemons/buttonbox/Cargo.lock;
+            meta = {
+              description = "Virtual joystick fed by Bitfocus Companion button presses";
+              license = pkgs.lib.licenses.mit;
+              platforms = pkgs.lib.platforms.linux;
+              mainProgram = "companion-buttonbox";
+            };
+          };
+
           # One folder with every module: point Companion's "Developer modules path" at
           # <this package>/share/companion-modules.
           #
@@ -85,9 +105,9 @@
           # directory, and files that are symlinks into another store path fail with ERR_ACCESS_DENIED.
           default = pkgs.runCommand "companion-modules" { } ''
             mkdir -p $out/share/companion-modules
-            ${pkgs.lib.concatMapStringsSep "\n" (m: "cp -r ${m}/share/companion-modules/* $out/share/companion-modules/") (
-              builtins.attrValues modules
-            )}
+            ${pkgs.lib.concatMapStringsSep "\n" (
+              m: "cp -r ${m}/share/companion-modules/* $out/share/companion-modules/"
+            ) (builtins.attrValues modules)}
           '';
         }
       );
@@ -127,6 +147,10 @@
               pkgs.dbus # dbus-run-session for the integration tests
               pkgs.xorg-server # Xvfb for the gamescope X11 integration test
               pkgs.jq
+              pkgs.cargo
+              pkgs.rustc
+              pkgs.rustfmt
+              pkgs.clippy
             ];
           };
         }

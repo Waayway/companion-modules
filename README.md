@@ -10,6 +10,11 @@ They replace a Generic HTTP module + local helper script. No HTTP server, no chi
 Status: plan phases 0 to 4 are done (both modules work against fakes and real D-Bus/X servers in tests).
 Layered presets and the ready-made Companion config are still to do. See `docs/plans/`.
 
+The `buttonbox` daemon (`daemons/buttonbox`, package `buttonbox-daemon`, binary `companion-buttonbox`) is a
+small Rust program that creates a uinput virtual joystick ("Companion Button Box", 32 buttons) and reads
+`down <n>` / `up <n>` lines from `$XDG_RUNTIME_DIR/companion-buttonbox.sock`. It must be running for the
+`buttonbox` module to press anything. It is not part of the `default` modules folder.
+
 ## Install with Nix
 
 The flake builds both modules into one folder, `share/companion-modules/`, with a `linux-media/` and a

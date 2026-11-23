@@ -8,3 +8,4 @@ pkg/
 .direnv/
 result
 result-*
+target/
