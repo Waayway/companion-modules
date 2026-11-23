@@ -62,6 +62,7 @@
         };
 
       moduleSpecs = {
+        buttonbox.hash = "sha256-0kB9NKurVbn4eAW7XkD2LRIe05pyuMS9dnukZPhj2cM=";
         linux-media.hash = "sha256-v9fO45fUp5DYJoe80nDyODe6QNLbjViYCU09faBOos8=";
         mangohud.hash = "sha256-2i8DlgvYDZrU0ZqTKdafxJqYihggc8PwHpmt5RohEcY=";
       };

@@ -1,0 +1,35 @@
+{
+	"$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
+	"type": "connection",
+	"id": "buttonbox",
+	"name": "buttonbox",
+	"shortname": "buttonbox",
+	"description": "Virtual joystick button box for sim racing (needs companion-buttonbox running)",
+	"version": "0.0.0",
+	"license": "MIT",
+	"repository": "git+https://github.com/Waayway/companion-modules.git",
+	"bugs": "https://github.com/Waayway/companion-modules/issues",
+	"maintainers": [
+		{
+			"name": "Thijs van Waaij",
+			"email": "43408024+Waayway@users.noreply.github.com"
+		}
+	],
+	"runtime": {
+		"type": "node26",
+		"api": "nodejs-ipc",
+		"apiVersion": "0.0.0",
+		"entrypoint": "../dist/main.js"
+	},
+	"legacyIds": [],
+	"manufacturer": "Linux",
+	"products": [
+		"Button box"
+	],
+	"keywords": [
+		"sim racing",
+		"joystick",
+		"uinput",
+		"linux"
+	]
+}
