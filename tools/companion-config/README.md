@@ -36,3 +36,19 @@ music and MangoHud button was pressed against fake backends: 23 of 23 checks pas
 (`tools/smoke/verify-config.sh config/wdesktop.companionconfig`). The Discord buttons are carried over but the
 Discord connection has no credentials: enter its client id and secret after importing. The system-audio
 buttons are gone on purpose (cells left empty).
+
+## add-racing.mjs
+
+Adds the sim racing pages to an export (for example the converted one):
+
+```
+node tools/companion-config/add-racing.mjs in.companionconfig out.companionconfig
+```
+
+- Adds a `buttonbox` connection (module `buttonbox`), or reuses the existing one.
+- Adds page `RACING` (buttons 1-12 on rows 0-2, keys 1-4) and `RACING 2` (buttons 13-16 on row 0), each with the
+  pageup/pagenum/pagedown column. Existing pages with those names are replaced, so running it twice is safe.
+- Hold buttons (START, FLASH, HORN, LOOK BACK, RADIO) send `press` on down and `release` on up and have a
+  different background colour; the others send `tap` on down.
+- Button style is cloned from the first GAMING button (without its icon). Other pages, connections and surfaces are
+  not touched.
