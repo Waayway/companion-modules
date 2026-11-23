@@ -17,7 +17,11 @@ import crypto from 'node:crypto'
 import fs from 'node:fs'
 import zlib from 'node:zlib'
 
-/** How a connection to a module that is loaded from a developer folder is stored. */
+/**
+ * How a connection to a module that is loaded from a developer folder is stored. Verified against a real
+ * Companion 5.1.3 export (docs/notes/companion-headless.md): moduleVersionId is the literal "dev",
+ * modules without upgrade scripts have lastUpgradeIndex and upgradeIndex -1.
+ */
 export const MODULE_ENTRY = {
 	moduleVersionId: 'dev',
 	updatePolicy: 'stable',
@@ -127,7 +131,9 @@ export function convert(old) {
 		cycleOrder: '1,2,0',
 		presetLabels: '0=Off, 1=Bar, 2=Detail',
 		updatePerAppConfigs: true,
+		busAddress: '',
 		sensorPollMs: 2000,
+		gamescopePollMs: 2000,
 	})
 
 	// Credentials of other connections never leave the machine in a committed file.
